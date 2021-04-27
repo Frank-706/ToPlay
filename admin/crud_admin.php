@@ -55,9 +55,9 @@ if(isset($_SESSION["pkb"])){
             }
             
 			function aggiorna(pk) {
-            	document.getElementById('pk').value			= pk;
-            	document.getElementById('azione').value 	= "update";
-            	//document.getElementById('nome').value 		= document.getElementById('nome_'+pk).innerHTML;
+            	document.getElementById('pk').value = pk;
+            	document.getElementById('azione').value = "update";
+            	//document.getElementById('nome').value = document.getElementById('nome_'+pk).innerHTML;
             	$("#insupddel").show();
                 return;
             }
