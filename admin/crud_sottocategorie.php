@@ -29,50 +29,35 @@ if(isset($_SESSION['pkb'])){
             	height:32px;
             }
         </style>
-        <script>
-        /*	function elimina(pk, s) {
-            	if (confirm("sei sicuro di voler eliminare l'articolo' " + s + "?")) {
-	            	document.getElementById('azione').value = "delete";
-	            	document.getElementById('pk').value = pk;
-    	        	document.forms["insupddel"].submit();
-                }
-                return;
-            }*/
-            
-            function setSelectedIndex(s, v) {
-              for ( var i = 0; i < s.options.length; i++ )
-                if ( s.options[i].value == v ) {
-                  s.options[i].selected = true;
-                  return;
+     <script>
+        function elimina(pk, s) {
+            if (confirm("sei sicuro di voler eliminare l'articolo " + s + "?")) {
+            document.getElementById('azione').value = "delete";
+            document.getElementById('pk').value = pk;
+            document.forms["insupddel"].submit();
                 }
                 return;
             }
 
-			function unSelectIndexes(s) {
-              for ( var i = 0; i < s.options.length; i++ )
-                  s.options[i].selected = false;
-              return;
-            }
-            
-			function aggiorna(pk) {
-            	document.getElementById('pk').value			= pk;
-            	document.getElementById('azione').value 	= "update";
-            	//document.getElementById('nome').value 		= document.getElementById('nome_'+pk).innerHTML;
-            	$("#insupddel").show();
+function aggiorna(pk) {
+            document.getElementById('pk').value = pk;
+            document.getElementById('azione').value = "update";
+            document.getElementById('nome').value = document.getElementById('nome_'+pk).innerHTML;
+            $("#insupddel").show();
                 return;
             }
             
             function inserisci() {
-				$('#insupddel').toggle();
-            	document.getElementById('pk').value			= "";
-            	document.getElementById('azione').value 	= "insert";
+            $('#insupddel').toggle();
+            document.getElementById('pk').value = "";
+            document.getElementById('azione').value = "insert";
                 if (this.value=='inserisci')
-                	this.value='annulla';
+                this.value='annulla';
                 else
-                	this.value='inserisci';
-				document.getElementById('nome').value 	= "";
+                this.value='inserisci';
+				document.getElementById('nome').value = "";
                 return;
-			}
+}
         </script>
 </head>
 <body>
@@ -80,47 +65,37 @@ if(isset($_SESSION['pkb'])){
 <br><a href="http://frankmoses.altervista.org/wapp/toplay/admin/index.php">Home CRUD</a><br>
 <?php
 if ($_POST["azione"] == "update") {
-    $campi = $_POST["campi"];
+    $categorie = $_POST["categoria"];
     $nome = $_POST["nome"];
-    $visibilita=$_POST["is_visibile"];
+    $visibilita=$_POST["visibile"];
     //echo $visibilita;
   if(isset($visibilita)){
-    $sql = "UPDATE tp_sottoCategorie SET
+    $sql = "UPDATE tp_sottocategorie SET
+							nome = '$nome',
+							fk_categorie=$categorie,
                             is_visibile = 1
                    WHERE pk = ".$_POST["pk"];
                    $conn->query($sql); // esecuzione della query sul DB
+                   echo $sql;
     }
-    if(!isset($visibilita)){
-        $sql = "UPDATE tp_sottoCategorie SET
-                                is_visibile = 0
-                       WHERE pk = ".$_POST["pk"];
-                       $conn->query($sql); // esecuzione della query sul DB
+    else{
+			$sql = "UPDATE tp_sottocategorie SET
+							nome = '$nome',
+							fk_categorie=$categorie,
+                            is_visibile = 0
+                   WHERE pk = ".$_POST["pk"];
+                   $conn->query($sql); // esecuzione della query sul DB
+                   echo $sql;
         }
-  if($campi=="nome")
-  {
-    $sql = "UPDATE tp_sottoCategorie SET
-                          $campi = '$nome'
-                 WHERE pk = ".$_POST["pk"];
-    $conn->query($sql); // esecuzione della query sul DB
-  }
-  if($campi=="fk_categorie")
-  {
-    $sql = "UPDATE tp_sottoCategorie SET
-                          $campi = '$nome'
-                 WHERE pk = ".$_POST["pk"];
-    $conn->query($sql); // esecuzione della query sul DB
-  }
-// gestione immagine
-    $check = getimagesize($_FILES["immagine"]["tmp_name"]);
 }
-if ($_POST["azione2"] == "insert") {
+if ($_POST["azione"] == "insert") {
 //die("disabled");
 	// trattamento dei dati ricevuti da POST: var_dump($_POST) se interessa indagare
   $visibile=$_POST['visibile'];
 	$nome = $_POST["nome"];
-    $categorie=$_POST["categorie"];
+    $categorie=$_POST["categoria"];
   if($numero>=0){
-    $sql = "SELECT COUNT(*) AS n FROM tp_sottoCategorie WHERE nome='$nome'";
+    $sql = "SELECT COUNT(*) AS n FROM tp_sottocategorie WHERE nome='$nome'";
     $RS = $conn->query($sql); 	// esecuzione della query di insert sul DB
     $row = $RS->fetch_assoc();	// da $RS estraggo una riga
       if ($row["n"]>=1) {			// testo il campo "n" della riga
@@ -132,7 +107,8 @@ if ($_POST["azione2"] == "insert") {
           echo $msg."<br>";
       }
       else
-    $sql = "INSERT INTO tp_sottoCategorie (
+		  if(isset($_POST['visibile'])){
+    $sql = "INSERT INTO tp_sottocategorie (
                           pk,
                           nome,
                          is_visibile,
@@ -140,10 +116,27 @@ if ($_POST["azione2"] == "insert") {
                       ) VALUES (
                              null,
                           '$nome',
-                          $visibile,
+                          1,
                           $categorie
                       )";
     $conn->query($sql); // esecuzione della query di insert sul DB
+    echo $sql;
+		  }
+		  else{
+			      $sql = "INSERT INTO tp_sottocategorie (
+                          pk,
+                          nome,
+                         is_visibile,
+                         fk_categorie
+                      ) VALUES (
+                             null,
+                          '$nome',
+                          0,
+                          $categorie
+                      )";
+    $conn->query($sql); // esecuzione della query di insert sul DB
+    echo $sql;
+		  }
     //echo $sql;  
 // gestione immagine
 ////////////////////////////////////
@@ -151,12 +144,6 @@ if ($_POST["azione2"] == "insert") {
 	  $msg = "inserimento della categoria '$nome' avvenuto con successo";
   }
 }
-/*if ($_POST["azione"] == "delete") {
-	$sql = "DELETE FROM tp_articoli WHERE pk = " . $_POST["pk"];
-	$conn->query($sql);
-    if (file_exists("../img/upload/articolo_".$_POST["pk"].".png"))
-    	unlink("../img/upload/articolo_".$_POST["pk"].".png");
-}*/
 
 $sql = "
 		SELECT  s.nome as 'Sotto Categoria',s.pk as 'pk',s.is_visibile as 'Visibilità', c.nome as 'Categoria'
@@ -199,37 +186,29 @@ if ($result->num_rows > 0) {
 ?>
 
 <?php echo $result->num_rows; ?> elementi<br>
-<form action="" method="POST">
-<h3><b>Inserimento Sotto Categoria:</b></h3>
-    Nome: <input type='text' name='nome' id='nome' min=0 placeholder="nome della Sotto Categoria..."><br>
-    Visibilit&agrave;: <input type='number' name='visibile' id='visibile'min=0 max=1 ><br>
+<input type = "button"
+id = "btn_cmd"
+name = "btn_cmd"
+value = "inserisci"
+onclick = "inserisci();">
+<form 	action	= "crud_sottocategorie.php"
+		method	= "POST" 
+        id		= "insupddel" 
+        name	= "insupddel" 
+        style	= "display:none;">
+        <input type="hidden" name="azione" id="azione" value="insert">
+<input type="hidden" name="pk" id="pk" value="">
+	Nome: <input type='text' name='nome' id='nome' placeholder="nome della Sotto Categoria..."><br>
+    Visibilit&agrave;: <input type='checkbox' name='visibile' id='visibile'><br>
     <?php
    echo "Categoria: <select id='categoria' name='categoria'>\n";
    echo " <option value='' label='Seleziona una categoria' selected disabled/>"; 
-   $sql = "SELECT * from tp_categorie";
+   $sql = "SELECT * from tp_categorie where is_visibile=1";
    $RS = $conn->query($sql);     // esecuzione della query di insert sul DB
    while ($row = $RS->fetch_assoc())
        echo "<option value='".$row["pk"]."'>" . $row["nome"] . "</option>\n"; 
        echo "</select>\n";
   ?>
-<br><input type='submit' id="azione2" name="azione2" value='insert'><br><br>
-</form>
-
-<form 	action	= ""
-		method	= "POST" 
-        id		= "insupddel" 
-        name	= "insupddel" 
-        style	= "display:none;">
-        <h3><b>Aggiornamento campi</h3>
-	<input type="hidden" name="azione" id="azione" value="insert">
-	<input type="hidden" name="pk" id="pk" value="">
-    Campi: <select id='campi' name='campi'>
-            <option value='' label='Seleziona un campo' selected disabled>
-            <option value='nome' label='nome'>
-            <option value='fk_categorie' label='fk_categorie'>
-    </select>
-     Visibilit&agrave;: <input type="checkbox" id='is_visibile' name='is_visibile'>
-    <input type='text' name='nome' id='nome' > Valore <br>
 	<input type="submit" value="inserisci">
 </form>
 </body>
@@ -237,4 +216,4 @@ if ($result->num_rows > 0) {
 <?php
 }
 $conn->close();
-?>
+?>

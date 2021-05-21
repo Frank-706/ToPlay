@@ -1,76 +1,71 @@
 <?php
-//die("disabled");
 session_start();
 include "../config.php";
-//var_dump($_POST);
 $conn = new mysqli($CONFIG["db-host"], $CONFIG["db-user"], $CONFIG["db-pass"], $CONFIG["db-name"]);
 if ($conn->connect_error)
-    die("Connection failed: " . $conn->connect_error); 
-/////////////////////////////
+    die("Connection failed: " . $conn->connect_error);
 if(isset($_SESSION["pkb"]))
 {
 ?>
 <!DOCTYPE html>
 <html>
-	<title>CRUD: ARTICOLI</title>
-	<head>
+<title>CRUD : Articoli</title>
+<head>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
         <style>
-        	body {
-            	padding:10px;
+        body {
+            padding:10px;
             }
-        	.comando {
-            	width:32px;
-            	height:32px;
+        .comando {
+            width:32px;
+            height:32px;
             }
             td img {
-            	width:32px;
-            	height:32px;
+            width:32px;
+            height:32px;
             }
         </style>
         <script>
-        /*	function elimina(pk, s) {
-            	if (confirm("sei sicuro di voler eliminare l'articolo' " + s + "?")) {
-	            	document.getElementById('azione').value = "delete";
-	            	document.getElementById('pk').value = pk;
-    	        	document.forms["insupddel"].submit();
-                }
-                return;
-            }*/
-            
-            function setSelectedIndex(s, v) {
-              for ( var i = 0; i < s.options.length; i++ )
-                if ( s.options[i].value == v ) {
-                  s.options[i].selected = true;
-                  return;
+        function elimina(pk, s) {
+            if (confirm("sei sicuro di voler eliminare l'articolo " + s + "?")) {
+            document.getElementById('azione').value = "delete";
+            document.getElementById('pk').value = pk;
+            document.forms["insupddel"].submit();
                 }
                 return;
             }
 
-			function unSelectIndexes(s) {
-              for ( var i = 0; i < s.options.length; i++ )
-                  s.options[i].selected = false;
-              return;
-            }
-            
-			function aggiorna(pk) {
-            	document.getElementById('pk').value			= pk;
-            	document.getElementById('azione').value 	= "update";
-            	//document.getElementById('nome').value 		= document.getElementById('nome_'+pk).innerHTML;
-            	$("#insupddel").show();
+function aggiorna(pk) {
+            document.getElementById('pk').value = pk;
+            document.getElementById('azione').value = "update";
+            document.getElementById('nome').value = document.getElementById('nome_'+pk).innerHTML;
+                document.getElementById('num').value = document.getElementById('prezzo_'+pk).innerHTML;
+                document.getElementById('qt').value = document.getElementById('qt_'+pk).innerHTML;
+				document.getElementById('codice').value = document.getElementById('codice_'+pk).innerHTML;
+				document.getElementById('descr').value = document.getElementById('descrizione_'+pk).innerHTML;
+        document.getElementById('scat').value = document.getElementById('sCat_'+pk).innerHTML;
+            $("#insupddel").show();
                 return;
             }
             
             function inserisci() {
-				$('#insupddel').toggle();
-            	document.getElementById('pk').value			= "";
-            	document.getElementById('azione').value 	= "insert";
+            $('#insupddel').toggle();
+            document.getElementById('pk').value = "";
+            document.getElementById('azione').value = "insert";
                 if (this.value=='inserisci')
-                	this.value='annulla';
+                this.value='annulla';
                 else
-                	this.value='inserisci';
-				document.getElementById('nome').value 	= "";
+                this.value='inserisci';
+				document.getElementById('nome').value = "";
+        document.getElementById('num').value = "";
+        document.getElementById('qt').value = "";
+				document.getElementById('codice').value = "";
+				document.getElementById('descr').value = "";
                 return;
-			}
+}
         </script>
 </head>
 <body>
@@ -78,62 +73,47 @@ if(isset($_SESSION["pkb"]))
 <br><a href="http://frankmoses.altervista.org/wapp/toplay/admin/index.php">Home CRUD</a><br>
 <?php
 if ($_POST["azione"] == "update") {
-    $campi = $_POST["campi"];
-  $nome = $_POST["nome"];
-  $prezzo = (double)$_POST["nome"];
-  $visibile=$_POST["is_visibile"];
-  if($campi=="codice"){
+  $qta = $_POST["qt"];
+  $nome = $_POST["nome"];  
+  $desc = $_POST["descr"];
+  $codice=$_POST['codice'];
+  $s_categorie=$_POST['scat'];
+  if($_POST["num"]>0){
+  $prezzo = (double)$_POST["num"];
+  }
+  if(isset($_POST['visibile'])){
+
+  /*$sql="SELECT s.nome as 'nome', s.pk as 'pk', a.fk_articoli as 'fk_sott'  from tp_sottocategorie s
+          join tp_articoli a on a.fk_sottocategorie = s.pk 
+          where s.is_visibile=1 and s.nome='$s_categorie'";
+		   $conn->query($sql);
+		   $RS = $conn->query($sql);     // esecuzione della query di insert sul DB
+   while ($row = $RS->fetch_assoc())
+           $fk=$row['fk_sott'];*/
   $sql = "UPDATE tp_articoli SET
-                          $campi = $nome
-                 WHERE pk = ".$_POST["pk"];
+                          nome = '$nome',
+						  prezzo_cata=$prezzo,
+						  is_visibile=1,
+						  qta = $qta,
+						  descrizione='$desc',
+              codice='$codice',
+						  fk_sottocategorie = $s_categorie
+              WHERE pk = ".$_POST["pk"];
                  $conn->query($sql); // esecuzione della query sul DB
+				 echo $sql;
   }
-  if(isset($visibile)){
+  else{
     $sql = "UPDATE tp_articoli SET
-                            is_visibile = 1
-                   WHERE pk = ".$_POST["pk"];
-                   $conn->query($sql); // esecuzione della query sul DB
-    }
-    if(!isset($visibile)){
-      $sql = "UPDATE tp_articoli SET
-                              is_visibile = 0
-                     WHERE pk = ".$_POST["pk"];
-                     $conn->query($sql); // esecuzione della query sul DB
-      }
-    if($campi=="fk_sottocategorie"){
-      $sql = "UPDATE tp_articoli SET
-                              $campi = $nome
-                     WHERE pk = ".$_POST["pk"];
-                     $conn->query($sql); // esecuzione della query sul DB
-      }
-    if($campi=="qta"){
-      $sql = "UPDATE tp_articoli SET
-                              $campi = $nome
-                     WHERE pk = ".$_POST["pk"];
-                     $conn->query($sql); // esecuzione della query sul DB
-      }
-  if($campi=="descrizione")
-  {
-    $sql = "UPDATE tp_articoli SET
-                          $campi = '$nome'
-                 WHERE pk = ".$_POST["pk"];
-    $conn->query($sql); // esecuzione della query sul DB
-  }
-  if($campi=="prezzo_cata" and $prezzo>=0)
-  {
-    //$nome=(double)$_POST["nome"];
-    $sql = "UPDATE tp_articoli SET
-                          $campi = $prezzo
-                 WHERE pk = ".$_POST["pk"];
-                 echo $sql;
-    $conn->query($sql); // esecuzione della query sul DB
-    }
-  if($campi=="nome")
-  {
-    $sql = "UPDATE tp_articoli SET
-                          $campi = '$nome'
-                 WHERE pk = ".$_POST["pk"];
-    $conn->query($sql); // esecuzione della query sul DB
+                          nome = '$nome',
+						  prezzo_cata=$prezzo,
+						  is_visibile=0,
+						  qta = $qta,
+						  descrizione='$desc',
+              codice='$codice',
+						  fk_sottocategorie = $s_categorie
+              WHERE pk = ".$_POST["pk"];
+                 $conn->query($sql); // esecuzione della query sul DB
+				 echo $sql;
   }
 // gestione immagine
     $check = getimagesize($_FILES["immagine"]["tmp_name"]);
@@ -146,18 +126,28 @@ if ($_POST["azione"] == "update") {
       else
         echo "File is not a PNG. Upload failed!";
     }
-    else
+    else{
       echo "File is not an image. Upload failed!";
+    }
 ////////////////////////////////////
 
   $msg = "aggiornamento dell'articolo '$nome' avvenuto con successo";
 }
-if ($_POST["azione2"] == "insert") {
-//die("disabled");
-	// trattamento dei dati ricevuti da POST: var_dump($_POST) se interessa indagare
-  $s_categorie=$_POST['scat'];
+
+if ($_POST["azione"] == "delete") {
+$sql = "DELETE FROM tp_articoli WHERE pk = " . $_POST["pk"];
+$conn->query($sql);
+}
+
+if ($_POST["azione"] == "insert") {
+	$s_categorie=$_POST['scat'];
   $quantita=$_POST['qt'];
-  $visibile=$_POST['visibile'];
+  if(isset($_POST['visibile'])){
+  $visibile=1;
+  }
+  else{
+    $visibile=0;
+  }
   $numero=(double)$_POST['num'];
   $codice=$_POST['codice'];
   $descrizione=$_POST['descr'];
@@ -178,7 +168,7 @@ if ($_POST["azione2"] == "insert") {
     $sql = "INSERT INTO tp_articoli (
                           pk,
                           nome,
-						             prezzo_cata,
+						  prezzo_cata,
                          codice,
                          is_visibile,
                          qta,
@@ -212,22 +202,8 @@ if ($_POST["azione2"] == "insert") {
 ////////////////////////////////////
 
 	  $msg = "inserimento dell'articolo '$nome' avvenuto con successo";
-  }
-  else{
-    ?>
-    <script>
-       alert("Inserire un prezzo reale e non inferiore a 0 o una parola/lettera!");
-    </script>
-    <?php
-  }
+ }
 }
-/*if ($_POST["azione"] == "delete") {
-	$sql = "DELETE FROM tp_articoli WHERE pk = " . $_POST["pk"];
-	$conn->query($sql);
-    if (file_exists("../img/upload/articolo_".$_POST["pk"].".png"))
-    	unlink("../img/upload/articolo_".$_POST["pk"].".png");
-}*/
-
 $sql = "
 		SELECT  s.nome as 'Sotto categoria',a.pk as 'pk', a.nome as 'Nome', a.prezzo_cata as 'Prezzo', a.is_visibile as 'Visibilità', a.qta as 'QTA', a.codice AS 'Codice', a.descrizione as 'Descrizione'
 		FROM 	tp_articoli a
@@ -235,7 +211,7 @@ $sql = "
        order by a.nome ASC
         ";
 $result = $conn->query($sql);
-
+echo $sql;
 if ($result->num_rows > 0) {
 ?>
 	<table border='1'>
@@ -252,6 +228,9 @@ if ($result->num_rows > 0) {
       </tr>
 <?php
 	while($row = $result->fetch_assoc()) {
+    setlocale(LC_MONETARY, 'it_IT');
+        $ppK=$row["pk"];
+        echo $row["pk"];
     	$fn = "../img/upload/articolo_" . $row["pk"] . ".png";
 ?>
 		<tr>
@@ -271,8 +250,8 @@ if ($result->num_rows > 0) {
           		name= 'prezzo_<?php echo $row["pk"]; ?>'><?php echo $row["Prezzo"]; ?></td>
            <td align="center"	id	= 'visibile_<?php echo $row["pk"]; ?>' 
           		name= 'visibile_<?php echo $row["pk"]; ?>'><?php echo $row["Visibilità"]; ?></td>
-          <td	id	= 'qta_<?php echo $row["pk"]; ?>' 
-                name= 'qta_<?php echo $row["pk"]; ?>'><?php echo $row["QTA"]; ?></td>
+          <td	id	= 'qt_<?php echo $row["pk"]; ?>' 
+                name= 'qt_<?php echo $row["pk"]; ?>'><?php echo $row["QTA"]; ?></td>
           <td	id	= 'codice_<?php echo $row["pk"]; ?>' 
                 name= 'codice_<?php echo $row["pk"]; ?>'><?php echo $row["Codice"]; ?></td>
           <td	id	= 'descrizione_<?php echo $row["pk"]; ?>' 
@@ -280,8 +259,7 @@ if ($result->num_rows > 0) {
           <td	id	= 'sCat_<?php echo $row["pk"]; ?>' 
                 name= 'sCat_<?php echo $row["pk"]; ?>'><?php echo $row["Sotto categoria"]; ?></td>     
           <td>
-            <!--<button onclick="elimina('<?php //echo $row["pk"]?>','<?php /*echo $row["nome"]*/?>')">elimina</button>-->
-            <button onclick="aggiorna('<?php echo $row["pk"]?>')">aggiorna</button>
+          <button onclick="aggiorna('<?php echo $row["pk"]?>')">aggiorna</button>
           </td>        
 		</tr>
 <?php
@@ -294,55 +272,43 @@ if ($result->num_rows > 0) {
 
 <?php echo $result->num_rows; ?> elementi<br>
 
-<form action="" method="POST" 	enctype	= "multipart/form-data" >
-<h3><b>Inserimento Articoli:</b></h3>
-    Nome: <input type='text' name='nome' id='nome' min=0 placeholder="nome dell'articolo..." ><br>
+<input type = "button"
+id = "btn_cmd"
+name = "btn_cmd"
+value = "inserisci"
+onclick = "inserisci();">
+
+<form action = "crud_articoli.php"
+enctype = "multipart/form-data" 
+method = "POST" 
+        id = "insupddel" 
+        name = "insupddel" 
+        style = "display:none;">
+<input type="hidden" name="azione" id="azione" value="insert">
+<input type="hidden" name="pk" id="pk" value="">
+    Nome: <input type='text' name='nome' id='nome' placeholder="nome dell'articolo..." ><br>
     Prezzo: <input type='text' name='num' id='num' placeholder="prezzo dell'articolo..." ><br>
-    Visibilit&agrave;: <input type='number' name='visibile' id='visibile'min=0 max=1 ><br>
-    Quantit&agrave;: <input type='number' name='qt' id='qt'min=0 ><br>
+    Visibilit&agrave;: <input type="checkbox" id='visibile' name='visibile'><br>
+    Quantit&agrave;: <input type='text' name='qt' id='qt' ><br>
     Codice: <input type='text' name='codice' id='codice'><br>
+    Descrizione: <input type='text' id="descr" name="descr"  placeholde="Descrizione..."><br>
     <?php
    echo "Sotto Categorie: <select id='scat' name='scat'>\n";
    echo " <option value='' label='Seleziona una sotto categoria' selected disabled/>"; 
-   $sql = "SELECT *  from tp_sottocategorie ";
+   $sql = "SELECT distinct s.nome as 'nome',s.pk as 'pk', a.fk_sottocategorie as 'fk' from tp_sottocategorie s
+          join tp_articoli a on s.pk=a.fk_sottocategorie
+          where s.is_visibile=1";
    $RS = $conn->query($sql);     // esecuzione della query di insert sul DB
    while ($row = $RS->fetch_assoc())
        echo "<option value='".$row["pk"]."'>" . $row["nome"] . "</option>\n"; 
        echo "</select>\n";
   ?>
-    <br>Descrizione: <textarea id="descr" name="descr" rows="2" cols="50" placeholde="Descrizione..."></textarea>
-    <br><input type='file' 		name='immagine' 	id='immagine' > Immagine <br>
-<br><input type='submit' id="azione2" name="azione2" value='insert'><br><br>
-
-</form>
-<form 	action	= ""
-		enctype	= "multipart/form-data" 
-		method	= "POST" 
-        id		= "insupddel" 
-        name	= "insupddel" 
-        style	= "display:none;">
-        <h3><b>Aggiornamento campi</h3>
-	<input type="hidden" name="azione" id="azione" value="insert">
-	<input type="hidden" name="pk" id="pk" value="">
-    Campi: <select id='campi' name='campi'>
-            <option value='' label='Seleziona un campo' selected disabled>
-            <option value='nome' label='nome'>
-            <option value='prezzo_cata' label='prezzo'>
-            <!--<option value='is_visibile' label='visibilità'>-->
-            <option value='qta' label='quantità'>
-            <option value='codice' label='codice'>
-            <option value='descrizione' label='descrizione'>
-            <option value='codice' label='codice'>
-            <option value='fk_sottocategorie' label='SottoCategorie'>
-    </select>
-    <input type='text' 		name='nome' 		id='nome' > Valore <br>
-    Visibilit&agrave;: <input type="checkbox" id='is_visibile' name='is_visibile'>
-    <input type='file' 		name='immagine' 	id='immagine' > Immagine <br>
-	<input type="submit" 	value="inserisci" >
+  <br><input type='file' 		name='immagine' 	id='immagine' > Immagine <br>
+<input type="submit" value="inserisci">
 </form>
 </body>
 </html>
 <?php
 }
 $conn->close();
-?>
+?>

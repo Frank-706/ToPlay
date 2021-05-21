@@ -57,7 +57,7 @@ if(isset($_SESSION["pkb"])){
 			function aggiorna(pk) {
             	document.getElementById('pk').value			= pk;
             	document.getElementById('azione').value 	= "update";
-            	//document.getElementById('nome').value 		= document.getElementById('nome_'+pk).innerHTML;
+            	 document.getElementById('nome').value 		= document.getElementById('nome_'+pk).innerHTML;
             	$("#insupddel").show();
                 return;
             }
@@ -80,17 +80,18 @@ if(isset($_SESSION["pkb"])){
 <br><a href="http://frankmoses.altervista.org/wapp/toplay/admin/index.php">Home CRUD</a><br>
 <?php
 if ($_POST["azione"] == "update") {
-    $campi = $_POST["campi"];
   $nome = $_POST["nome"];
-  $visibile=$_POST["is_visibile"];
+  $visibile=$_POST["visibile"];
   if(isset($visibile)){
     $sql = "UPDATE tp_categorie SET
+							nome='$nome',
                             is_visibile = 1
                    WHERE pk = ".$_POST["pk"];
                    $conn->query($sql); // esecuzione della query sul DB
     }
     if(!isset($visibile)){
       $sql = "UPDATE tp_categorie SET
+								nome='$nome',
                               is_visibile = 0
                      WHERE pk = ".$_POST["pk"];
                      $conn->query($sql); // esecuzione della query sul DB
@@ -105,7 +106,7 @@ if ($_POST["azione"] == "update") {
 // gestione immagine
     $check = getimagesize($_FILES["immagine"]["tmp_name"]);
 }
-if ($_POST["azione2"] == "insert") {
+if ($_POST["azione"] == "insert") {
 //die("disabled");
 	// trattamento dei dati ricevuti da POST: var_dump($_POST) se interessa indagare
   $visibile=$_POST['visibile'];
@@ -122,6 +123,7 @@ if ($_POST["azione2"] == "insert") {
           echo $msg."<br>";
       }
       else
+		  if(isset($_POST['visibile'])){
     $sql = "INSERT INTO tp_categorie (
                           pk,
                           nome,
@@ -129,8 +131,20 @@ if ($_POST["azione2"] == "insert") {
                       ) VALUES (
                              null,
                           '$nome',
-                          $visibile
+                           1
                       )";
+		  }
+		  else{
+			  $sql = "INSERT INTO tp_categorie (
+                          pk,
+                          nome,
+                         is_visibile
+                      ) VALUES (
+                             null,
+                          '$nome',
+                           1
+                      )";
+		  }
     $conn->query($sql); // esecuzione della query di insert sul DB
     //echo $sql;  
 // gestione immagine
@@ -183,26 +197,20 @@ if ($result->num_rows > 0) {
 ?>
 
 <?php echo $result->num_rows; ?> elementi<br>
-<form action="" method="POST" 	enctype	= "multipart/form-data" >
-<h3><b>Inserimento Articoli:</b></h3>
-    Nome: <input type='text' name='nome' id='nome' min=0 placeholder="nome della categoria..." ><br>
-    Visibilit&agrave;: <input type='number' name='visibile' id='visibile'min=0 max=1 ><br>
-<br><input type='submit' id="azione2" name="azione2" value='insert'><br><br>
-</form>
-<form 	action	= ""
+<input type = "button"
+id = "btn_cmd"
+name = "btn_cmd"
+value = "inserisci"
+onclick = "inserisci();">
+<form 	action	= "crud_categorie.php"
 		method	= "POST" 
         id		= "insupddel" 
         name	= "insupddel" 
         style	= "display:none;">
-        <h3><b>Aggiornamento campi</h3>
 	<input type="hidden" name="azione" id="azione" value="insert">
 	<input type="hidden" name="pk" id="pk" value="">
-    Campi: <select id='campi' name='campi'>
-            <option value='' label='Seleziona un campo' selected disabled>
-            <option value='nome' label='nome'>
-    </select>
-    <input type='text' 		name='nome' 		id='nome' > Valore <br>
-    Visibilit&agrave;: <input type="checkbox" id='is_visibile' name='is_visibile'>
+    Nome: <input type='text' name='nome' id='nome' min=0 placeholder="nome della categoria..." ><br>
+    Visibilit&agrave;: <input type="checkbox" id='visibile' name='visibile' ><br>
 	<input type="submit" 	value="inserisci" >
 </form>
 </body>
@@ -210,4 +218,4 @@ if ($result->num_rows > 0) {
 <?php
 }
 $conn->close();
-?>
+?>

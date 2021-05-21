@@ -1,5 +1,5 @@
 <?php
-var_dump($_SERVER);
+//var_dump($_SERVER);
 //die("disabled");
 session_start();
 include "../config.php";
@@ -56,10 +56,12 @@ if(isset($_SESSION['pkb'])){
             }
             
 			function aggiorna(pk) {
-            	document.getElementById('pk').value			= pk;
-            	document.getElementById('azione').value 	= "update";
-            	//document.getElementById('nome').value 		= document.getElementById('nome_'+pk).innerHTML;
-            	$("#insupddel").show();
+                document.getElementById('pk').value = pk;
+				document.getElementById('azione').value = "update";
+				document.getElementById('nro').value = document.getElementById('num_'+pk).innerHTML;
+                document.getElementById('data_d').value = document.getElementById('data_'+pk).innerHTML;
+                document.getElementById('utenti').value = document.getElementById('email_'+pk).innerHTML;
+            $("#insupddel").show();
                 return;
             }
             
@@ -71,8 +73,10 @@ if(isset($_SESSION['pkb'])){
                 	this.value='annulla';
                 else
                 	this.value='inserisci';
-				document.getElementById('nome').value 	= "";
-                return;
+				document.getElementById('nro').value = "";
+                document.getElementById('data_d').value = "";
+                document.getElementById('utenti').value ="";         
+				return;
 			}
         </script>
 </head>
@@ -81,39 +85,33 @@ if(isset($_SESSION['pkb'])){
 <br><a href="http://frankmoses.altervista.org/wapp/toplay/admin/index.php">Home CRUD</a><br>
 <?php
 if ($_POST["azione"] == "update") {
-    $campi = $_POST["campi"];
-    $nome = $_POST["nome"];
+     $annullato=$_POST['annullato'];
+  $data=$_POST['data_d'];
+  $num = $_POST["nro"];
+  $utenti=$_POST["utenti"];
         //echo $password;
-  if($campi=="dt"){
+		if(isset($_POST['annullato'])){
   $sql = "UPDATE tp_ordini SET
-                          dt = '$nome'
+                           nro=$num,
+                          dt = unix_timestamp('$data'),
+						  is_annullato=1,
+						  fk_utenti=$utenti
                  WHERE pk = ".$_POST["pk"];
                  $conn->query($sql); // esecuzione della query sul DB
+                 echo $sql;
   }
-  if($campi=="is_annullato"){
-    $sql = "UPDATE tp_ordini SET
-                           is_annullato = $nome
-                   WHERE pk = ".$_POST["pk"];
-                   $conn->query($sql); // esecuzione della query sul DB
-                   echo $sql;
-    }
-    if($campi=="nro"){ 
-        $sql = "UPDATE tp_ordini SET
-        nro = $nome
-    WHERE pk = ".$_POST["pk"];
-   $conn->query($sql); // esecuzione della query sul DB
-    echo $sql;
-      }
-  if($campi=="fk_utenti")
-  { 
-    $nome = $_POST["nome"];
-    $sql = "UPDATE tp_ordini SET
-                        fk_utenti = $nome
+  else{
+	  $sql = "UPDATE tp_ordini SET
+                           nro=$num,
+                          dt =unix_timestamp('$data'),
+						  is_annullato=0,
+						  fk_utenti=$utenti
                  WHERE pk = ".$_POST["pk"];
-    $conn->query($sql); // esecuzione della query sul DB
+                 $conn->query($sql); // esecuzione della query sul DB
+                 echo $sql;
   }
 }
-if ($_POST["azione2"] == "insert") {
+if ($_POST["azione"] == "insert") {
 //die("disabled");
 	// trattamento dei dati ricevuti da POST: var_dump($_POST) se interessa indagare
   $annullato=$_POST['annullato'];
@@ -132,6 +130,7 @@ if ($_POST["azione2"] == "insert") {
         echo $msg."<br>";
     }
     else
+    if(isset($_POST['annulato'])){
     $sql = "INSERT INTO tp_ordini (
                           pk,
                           dt,
@@ -142,11 +141,29 @@ if ($_POST["azione2"] == "insert") {
                              null,
                           '$data',
                           $num,
-                          $annullato,
+                          1,
                           $utenti
                       )";
     $conn->query($sql); // esecuzione della query di insert sul DB
     echo $sql;  
+}
+else{
+    $sql = "INSERT INTO tp_ordini (
+        pk,
+        dt,
+        nro,
+       is_annullato,
+       fk_utenti
+    ) VALUES (
+           null,
+        '$data',
+        $num,
+        0,
+        $utenti
+    )";
+$conn->query($sql); // esecuzione della query di insert sul DB
+echo $sql;  
+}
 }
 /*if ($_POST["azione"] == "delete") {
 	$sql = "DELETE FROM tp_articoli WHERE pk = " . $_POST["pk"];
@@ -175,13 +192,13 @@ if ($result->num_rows > 0) {
       </tr>
 <?php
 	while($row = $result->fetch_assoc()) {
-        $dt=date('d/m/Y',$row["Data"]);
+        $dt=date('Y-m-d',$row["Data"]);
 ?>
 		<tr>
           <td	id	= 'num_<?php echo $row["pk"]; ?>' 
           		name= 'num_<?php echo $row["pk"]; ?>'><?php echo $row["Numero"]; ?></td>
           <td	id	= 'data_<?php echo $row["pk"]; ?>' 
-          		name= 'data_<?php echo $row["pk"]; ?>'><?php echo /*$row["Data"];*/$dt ?></td>
+          		name= 'data_<?php echo $row["pk"]; ?>'><?php echo /*$row["Data"];*/$dt; ?></td>
            <td align="center"	id	= 'annullare_<?php echo $row["pk"]; ?>' 
           		name= 'annullare_<?php echo $row["pk"]; ?>'><?php echo $row["Annullare"]; ?></td>
                 <?php
@@ -206,38 +223,30 @@ if ($result->num_rows > 0) {
 ?>
 
 <?php echo $result->num_rows; ?> elementi<br>
-<form action="" method="POST"  >
-<h3><b>Inserimento Ordini:</b></h3>
-    Numero: <input type='text' name='nro' id='nro' placeholder="inserisci un numero" ><br>
-    Data: <input type='date' name='data_d' id='data_d' ><br>
-    Annullato: <input type='number' name='annullato' id='annullato' min=0 max=1 ><br>
-    <?php
-   echo "Utenti: <select id='utenti' name='utenti'>\n";
-   echo " <option value='' label='Seleziona un utente' selected disabled/>"; 
-   $sql = "SELECT *  from tp_utenti ";
-   $RS = $conn->query($sql);     // esecuzione della query di insert sul DB
-   while ($row = $RS->fetch_assoc())
-       echo "<option value='".$row["pk"]."'>" . $row["email"] . "</option>\n"; 
-       echo "</select>\n";
-  ?>
-      <br><input type='submit' id="azione2" name="azione2" value='insert'><br><br>
-</form>
-<form 	action	= ""
+<input type = "button"
+id = "btn_cmd"
+name = "btn_cmd"
+value = "inserisci"
+onclick = "inserisci();">
+<form 	action	= "crud_ordini.php"
 		method	= "POST" 
         id		= "insupddel" 
         name	= "insupddel" 
         style	= "display:none;">
-        <h3><b>Aggiornamento campi</h3>
 	<input type="hidden" name="azione" id="azione" value="insert">
 	<input type="hidden" name="pk" id="pk" value="">
-    Campi: <select id='campi' name='campi'>
-            <option value='' label='Seleziona un campo' selected disabled>
-            <option value='dt' label='dt'>
-            <option value='nro' label='nro'>
-            <option value='is_annullato' label='is_annullato'>
-            <option value='fk_utenti' label='fk_utenti'>
-    </select>
-    Valore: <input type='text' 		name='nome' id='nome' ><br>
+    Numero: <input type='number' name='nro' id='nro' placeholder="inserisci un numero" ><br>
+    Data: <input type='text' name='data_d' id='data_d' ><br>
+    Annullato: <input type='checkbox' name='annullato' id='annullato'><br>
+	<?php
+	   echo "Utenti: <select id='utenti' name='utenti'>\n";
+	   echo " <option value='' label='Seleziona un utente' selected disabled/>"; 
+	   $sql = "SELECT *  from tp_utenti where is_enabled=1";
+	   $RS = $conn->query($sql);     // esecuzione della query di insert sul DB
+	   while ($row = $RS->fetch_assoc())
+		   echo "<option value='".$row["pk"]."'>" . $row["email"] . "</option>\n"; 
+		   echo "</select>\n";
+  ?>
 	<input type="submit" 	value="inserisci" >
 </form>
 </body>
@@ -245,4 +254,4 @@ if ($result->num_rows > 0) {
 <?php 
 }
 $conn->close();
-?>
+?>

@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Mag 22, 2021 alle 00:36
+-- Generation Time: Mag 22, 2021 alle 00:33
 -- Versione del server: 5.6.33-log
 -- PHP Version: 5.6.40
 
@@ -23,34 +23,26 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Struttura della tabella `tp_ordini`
+-- Struttura della tabella `tp_carrelli`
 --
 
-CREATE TABLE IF NOT EXISTS `tp_ordini` (
+CREATE TABLE IF NOT EXISTS `tp_carrelli` (
   `pk` int(11) NOT NULL AUTO_INCREMENT,
+  `fk_utenti` int(11) DEFAULT NULL,
+  `fk_articoli` int(11) DEFAULT NULL,
+  `qta` int(11) DEFAULT '1',
   `dt` bigint(20) DEFAULT NULL,
-  `nro` int(11) NOT NULL,
-  `is_annullato` tinyint(1) NOT NULL DEFAULT '0',
-  `fk_utenti` int(11) NOT NULL,
-  PRIMARY KEY (`pk`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=45 ;
+  `prezzo_vend` decimal(10,2) NOT NULL,
+  PRIMARY KEY (`pk`),
+  UNIQUE KEY `fk_utenti` (`fk_utenti`,`fk_articoli`)
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=51 ;
 
 --
--- Dump dei dati per la tabella `tp_ordini`
+-- Dump dei dati per la tabella `tp_carrelli`
 --
 
-INSERT INTO `tp_ordini` (`pk`, `dt`, `nro`, `is_annullato`, `fk_utenti`) VALUES
-(1, 1615330800, 1, 0, 1),
-(2, 1615935600, 2, 1, 2),
-(3, 1616454000, 3, 0, 5),
-(4, 1621634400, 4, 0, 2),
-(41, 1621635186, 8, 0, 1),
-(31, 1621634057, 6, 0, 1),
-(40, 1621635174, 7, 0, 1),
-(44, 1621636411, 11, 0, 1),
-(29, 1621633808, 5, 0, 1),
-(42, 1621635240, 9, 0, 1),
-(43, 1621635370, 10, 0, 1);
+INSERT INTO `tp_carrelli` (`pk`, `fk_utenti`, `fk_articoli`, `qta`, `dt`, `prezzo_vend`) VALUES
+(50, 1, 4, 1, 1621636411, '100.00');
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

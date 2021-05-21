@@ -30,104 +30,66 @@ if(isset($_SESSION["pkb"])){
             }
         </style>
         <script>
-        /*	function elimina(pk, s) {
-            	if (confirm("sei sicuro di voler eliminare l'articolo' " + s + "?")) {
-	            	document.getElementById('azione').value = "delete";
-	            	document.getElementById('pk').value = pk;
-    	        	document.forms["insupddel"].submit();
-                }
-                return;
-            }*/
-            
-            function setSelectedIndex(s, v) {
-              for ( var i = 0; i < s.options.length; i++ )
-                if ( s.options[i].value == v ) {
-                  s.options[i].selected = true;
-                  return;
-                }
-                return;
-            }
-
-			function unSelectIndexes(s) {
-              for ( var i = 0; i < s.options.length; i++ )
-                  s.options[i].selected = false;
-              return;
-            }
-            
-			function aggiorna(pk) {
-            	document.getElementById('pk').value = pk;
-            	document.getElementById('azione').value = "update";
-            	//document.getElementById('nome').value = document.getElementById('nome_'+pk).innerHTML;
-            	$("#insupddel").show();
+        function aggiorna(pk) {
+            document.getElementById('pk').value = pk;
+            document.getElementById('azione').value = "update";
+            document.getElementById('nome').value = document.getElementById('nome_'+pk).innerHTML;
+                document.getElementById('cognome').value = document.getElementById('cognome_'+pk).innerHTML;
+                document.getElementById('ema').value = document.getElementById('email_'+pk).innerHTML;
+				document.getElementById('pass').value = document.getElementById('passw_'+pk).innerHTML;
+            $("#insupddel").show();
                 return;
             }
             
             function inserisci() {
-				$('#insupddel').toggle();
-            	document.getElementById('pk').value			= "";
-            	document.getElementById('azione').value 	= "insert";
+            $('#insupddel').toggle();
+            document.getElementById('pk').value = "";
+            document.getElementById('azione').value = "insert";
                 if (this.value=='inserisci')
-                	this.value='annulla';
+                this.value='annulla';
                 else
-                	this.value='inserisci';
-				document.getElementById('nome').value 	= "";
+                this.value='inserisci';
+				document.getElementById('nome').value = "";
+				document.getElementById('cognome').value = "";
+				document.getElementById('pass').value = "";
+				document.getElementById('ema').value = "";
                 return;
-			}
+}
         </script>
 </head>
 <body>
 <h1>CRUD: ADMIN</h1>
 <br><a href="http://frankmoses.altervista.org/wapp/toplay/admin/index.php">Home CRUD</a><br>
 <?php
-if ($_POST["azione"] == "update") {
-    $campi = $_POST["campi"];
-    $nome = $_POST["nome"];
-    $abilitato=$_POST["is_enabled"];
-  if($campi=="cognome"){
-    $cognome=$_POST['cognome'];
-  $sql = "UPDATE tp_admin SET
-                          $campi = '$nome'
+if ($_POST["azione"] == "update") 
+    {
+	  $password=md5($_POST['pass']);
+	  //$abilitato=$_POST['abilitato'];
+	  $email=$_POST['ema'];
+	  $cognome=$_POST['cognome']; 
+	  $nome = $_POST["nome"];
+	  if(isset($_POST["abilitato"])){
+		$sql = "UPDATE tp_admin SET
+                          nome='$nome',
+					      cognome='$cognome',
+                         is_enabled=1,
+                         email='$email',
+                        `password`='$password'
                  WHERE pk = ".$_POST["pk"];
                  $conn->query($sql); // esecuzione della query sul DB
   }
-  if(isset($_POST["is_enabled"])){
-    $sql = "UPDATE tp_admin SET
-                           is_enabled = 1
-                   WHERE pk = ".$_POST["pk"];
-                   $conn->query($sql); // esecuzione della query sul DB
-                   //echo $sql;
-    }
-    if(!isset($_POST["is_enabled"])){
-      $sql = "UPDATE tp_admin SET
-                             is_enabled = 0
-                     WHERE pk = ".$_POST["pk"];
-                     $conn->query($sql); // esecuzione della query sul DB
-                   //  echo $sql;
-      }
-    if($campi=="password"){ 
-        $sql = "UPDATE tp_admin SET
-        `password` = md5('$nome')
-    WHERE pk = ".$_POST["pk"];
-   $conn->query($sql); // esecuzione della query sul DB
-    echo $sql;
-      }
-  if($campi=="nome")
-  { 
-    $nome = $_POST["nome"];
-    $sql = "UPDATE tp_admin SET
-                          $campi = '$nome'
+  else{
+	   $sql = "UPDATE tp_admin SET
+                          nome='$nome',
+					      cognome='$cognome',
+                         is_enabled=0,
+                         email='$email',
+                        `password`='$password'
                  WHERE pk = ".$_POST["pk"];
-    $conn->query($sql); // esecuzione della query sul DB
-  }
-  if($campi=="email")
-  { 
-    $sql = "UPDATE tp_admin SET
-                          $campi = '$nome'
-                 WHERE pk = ".$_POST["pk"];
-    $conn->query($sql); // esecuzione della query sul DB
+                 $conn->query($sql); // esecuzione della query sul DB
   }
 }
-if ($_POST["azione2"] == "insert") {
+if ($_POST["azione"] == "insert") {
 //die("disabled");
 	// trattamento dei dati ricevuti da POST: var_dump($_POST) se interessa indagare
   $password=md5($_POST['pass']);
@@ -150,7 +112,7 @@ if ($_POST["azione2"] == "insert") {
     $sql = "INSERT INTO tp_admin (
                           pk,
                           nome,
-					              cognome,
+					            cognome,
                          is_enabled,
                          email,
                         `password`
@@ -163,7 +125,7 @@ if ($_POST["azione2"] == "insert") {
                           '$password'
                       )";
     $conn->query($sql); // esecuzione della query di insert sul DB
-    echo $sql;  
+    //echo $sql;  
 }
 /*if ($_POST["azione"] == "delete") {
 	$sql = "DELETE FROM tp_articoli WHERE pk = " . $_POST["pk"];
@@ -187,13 +149,7 @@ if ($result->num_rows > 0) {
         <th>Cognome</th>
         <th>Abilitato</th>
         <th>Email</th>
-        <?php
-        if(isset($_SESSION["pkb"])){
-        ?>
         <th>Password</th>
-        <?php
-        }
-        ?>
         <th>comandi</th>
       </tr>
 <?php
@@ -208,14 +164,8 @@ if ($result->num_rows > 0) {
           		name= 'abilitato_<?php echo $row["pk"]; ?>'><?php echo $row["Abilitato"]; ?></td>
           <td	id	= 'email_<?php echo $row["pk"]; ?>' 
                 name= 'email_<?php echo $row["pk"]; ?>'><?php echo $row["Email"]; ?></td>
-                <?php
-                if(isset($_SESSION["pkb"])){
-                ?>
           <td	id	= 'passw_<?php echo $row["pk"]; ?>' 
                 name= 'passw_<?php echo $row["pk"]; ?>'><?php echo $row["Password"]; ?></td>
-                <?php
-                }
-                ?>
           <td>
             <!--<button onclick="elimina('<?php //echo $row["pk"]?>','<?php /*echo $row["nome"]*/?>')">elimina</button>-->
             <button onclick="aggiorna('<?php echo $row["pk"]?>')">aggiorna</button>
@@ -230,38 +180,29 @@ if ($result->num_rows > 0) {
 ?>
 
 <?php echo $result->num_rows; ?> elementi<br>
-<form action="" method="POST"  >
-<h3><b>Inserimento Admin:</b></h3>
-    Nome: <input type='text' name='nome' id='nome' ><br>
-    Cognome: <input type='text' name='cognome' id='cognome' ><br>
-    <!--Abilitato: <input type='number' name='abilitato' id='abilitato' min=0 max=1 ><br>-->
-    Email: <input type='email' name='ema' id='ema' required><br>
-    Password: <input type='password' name='pass' id='pass'><br>
-    <br><input type='submit' id="azione2" name="azione2" value='insert'><br><br>
-</form>
-<form 	action	= ""
+<input type = "button"
+id = "btn_cmd"
+name = "btn_cmd"
+value = "inserisci"
+onclick = "inserisci();">
+
+<form 	action	= "crud_admin.php"
 		method	= "POST" 
         id		= "insupddel" 
         name	= "insupddel" 
         style	= "display:none;">
-        <h3><b>Aggiornamento campi</h3>
-	<input type="hidden" name="azione" id="azione" value="insert">
-	<input type="hidden" name="pk" id="pk" value="">
-    Campi: <select id='campi' name='campi'>
-            <option value='' label='Seleziona un campo' selected disabled>
-            <option value='nome' label='nome'>
-            <option value='cognome' label='cognome'>
-            <!--<option value='is_enabled' label='is_enabled'>-->
-            <option value='email' label='email'>
-            <option value='password' label='password'>
-    </select>
-    Valore: <input type='text' 		name='nome' id='nome' ><br>
-    Abilitato: <input type="checkbox" id="is_enabled" name="is_enabled">
-	<input type="submit" 	value="inserisci" >
+        <input type="hidden" name="azione" id="azione" value="insert">
+<input type="hidden" name="pk" id="pk" value="">
+    Nome: <input type='text' name='nome' id='nome' ><br>
+    Cognome: <input type='text' name='cognome' id='cognome' ><br>
+    Abilitato: <input type="checkbox" id='abilitato' name='abilitato' ><br>
+    Email: <input type='email' name='ema' id='ema' required><br>
+    Password: <input type='password' name='pass' id='pass'><br>
+<input type="submit" value="inserisci">
 </form>
 </body>
 </html>
 <?php
 }
 $conn->close();
-?>
+?>

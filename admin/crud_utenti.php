@@ -30,50 +30,44 @@ if(isset($_SESSION['pkb']))
             	height:32px;
             }
         </style>
-        <script>
-        /*	function elimina(pk, s) {
-            	if (confirm("sei sicuro di voler eliminare l'articolo' " + s + "?")) {
-	            	document.getElementById('azione').value = "delete";
-	            	document.getElementById('pk').value = pk;
-    	        	document.forms["insupddel"].submit();
-                }
-                return;
-            }*/
-            
-            function setSelectedIndex(s, v) {
-              for ( var i = 0; i < s.options.length; i++ )
-                if ( s.options[i].value == v ) {
-                  s.options[i].selected = true;
-                  return;
+      <script>
+        function elimina(pk, s) {
+            if (confirm("sei sicuro di voler eliminare l'articolo " + s + "?")) {
+            document.getElementById('azione').value = "delete";
+            document.getElementById('pk').value = pk;
+            document.forms["insupddel"].submit();
                 }
                 return;
             }
 
-			function unSelectIndexes(s) {
-              for ( var i = 0; i < s.options.length; i++ )
-                  s.options[i].selected = false;
-              return;
-            }
-            
-			function aggiorna(pk) {
-            	document.getElementById('pk').value			= pk;
-            	document.getElementById('azione').value 	= "update";
-            	//document.getElementById('nome').value 		= document.getElementById('nome_'+pk).innerHTML;
-            	$("#insupddel").show();
+         function aggiorna(pk) {
+            document.getElementById('pk').value = pk;
+            document.getElementById('azione').value = "update";
+            document.getElementById('nome').value = document.getElementById('nome_'+pk).innerHTML;
+                document.getElementById('cognome').value = document.getElementById('cognome_'+pk).innerHTML;
+                document.getElementById('cf').value = document.getElementById('cf_'+pk).innerHTML;
+				document.getElementById('ema').value = document.getElementById('email_'+pk).innerHTML;
+				document.getElementById('pass').value = document.getElementById('password_'+pk).innerHTML;
+        //document.getElementById('registrazione').value = document.getElementById('sCat_'+pk).innerHTML;
+            $("#insupddel").show();
                 return;
             }
             
-            function inserisci() {
-				$('#insupddel').toggle();
-            	document.getElementById('pk').value			= "";
-            	document.getElementById('azione').value 	= "insert";
+		function inserisci() {
+            $('#insupddel').toggle();
+            document.getElementById('pk').value = "";
+            document.getElementById('azione').value = "insert";
                 if (this.value=='inserisci')
-                	this.value='annulla';
+                this.value='annulla';
                 else
-                	this.value='inserisci';
-				document.getElementById('nome').value 	= "";
+                this.value='inserisci';
+				 document.getElementById('nome').value = '';
+                document.getElementById('cognome').value = '';
+                document.getElementById('cf').value = '';
+				document.getElementById('email').value = '';
+				document.getElementById('pass').value = '';
                 return;
-			}
+}
         </script>
 </head>
 <body>
@@ -81,66 +75,40 @@ if(isset($_SESSION['pkb']))
 <br><a href="http://frankmoses.altervista.org/wapp/toplay/admin/index.php">Home CRUD</a><br>
 <?php
 if ($_POST["azione"] == "update") {
-    $campi = $_POST["campi"];
-    $nome = $_POST["nome"];
-        //echo $password;
-  if($campi=="cognome"){
+    $password=md5($_POST['pass']);
+  $email=$_POST['ema'];
+  $cognome=$_POST['cognome'];
+  $nome = $_POST["nome"];
+  $cf=$_POST["cf"];
+    if(isset($_POST['abilitato'])){
     $cognome=$_POST['cognome'];
   $sql = "UPDATE tp_utenti SET
-                          $campi = '$nome'
+                          nome = '$nome',
+						  cognome = '$cognome',
+						  email = '$email',
+						  cf=UPPER('$cf'),
+						  `password`='$password',
+						  is_enabled=1
                  WHERE pk = ".$_POST["pk"];
                  $conn->query($sql); // esecuzione della query sul DB
   }
-  if($campi=="is_enabled"){
-    $sql = "UPDATE tp_utenti SET
-                           is_enabled = $nome
-                   WHERE pk = ".$_POST["pk"];
-                   $conn->query($sql); // esecuzione della query sul DB
-                   echo $sql;
-    }
-    if($campi=="password"){ 
-        $sql = "UPDATE tp_utenti SET
-        `password` = md5('$nome')
-    WHERE pk = ".$_POST["pk"];
-   $conn->query($sql); // esecuzione della query sul DB
-    echo $sql;
-      }
-    if($campi=="registrazione")
-    { 
-    $nome = $_POST["nome"];
-    $sql = "UPDATE tp_utenti SET
-                          registrazione = '$nome'
+  else
+  {
+	    $sql = "UPDATE tp_utenti SET
+                          nome = '$nome',
+						  cognome = '$cognome',
+						  email = '$email',
+						  cf=UPPER('$cf'),
+						  `password`='$password',
+						  is_enabled=0
                  WHERE pk = ".$_POST["pk"];
-    $conn->query($sql); // esecuzione della query sul DB
-  }
-  if($campi=="nome")
-  { 
-    $nome = $_POST["nome"];
-    $sql = "UPDATE tp_utenti SET
-                          $campi = '$nome'
-                 WHERE pk = ".$_POST["pk"];
-    $conn->query($sql); // esecuzione della query sul DB
-  }
-  if($campi=="email")
-  { 
-    $sql = "UPDATE tp_utenti SET
-                          $campi = '$nome'
-                 WHERE pk = ".$_POST["pk"];
-    $conn->query($sql); // esecuzione della query sul DB
-  }
-  if($campi=="cf")
-  { 
-    $sql = "UPDATE tp_utenti SET
-                          $campi = UPPER('$nome')
-                 WHERE pk = ".$_POST["pk"];
-    $conn->query($sql); // esecuzione della query sul DB
+                 $conn->query($sql); // esecuzione della query sul DB
   }
 }
-if ($_POST["azione2"] == "insert") {
+if ($_POST["azione"] == "insert") {
 //die("disabled");
 	// trattamento dei dati ricevuti da POST: var_dump($_POST) se interessa indagare
   $password=md5($_POST['pass']);
-  $abilitato=$_POST['abilitato'];
   $email=$_POST['ema'];
   $cognome=$_POST['cognome'];
   $nome = $_POST["nome"];
@@ -180,12 +148,6 @@ if ($_POST["azione2"] == "insert") {
     $conn->query($sql); // esecuzione della query di insert sul DB
     //echo $sql;  
 }
-/*if ($_POST["azione"] == "delete") {
-	$sql = "DELETE FROM tp_articoli WHERE pk = " . $_POST["pk"];
-	$conn->query($sql);
-    if (file_exists("../img/upload/articolo_".$_POST["pk"].".png"))
-    	unlink("../img/upload/articolo_".$_POST["pk"].".png");
-}*/
 
 $sql = "
 		SELECT  a.nome as 'Nome',a.cognome as 'Cognome',a.pk as 'pk',  a.is_enabled as 'Abilitato', a.email as 'Email', a.password AS 'Password', a.cf as 'Codice Fiscale',a.registrazione as 'Registrazione'
@@ -239,35 +201,24 @@ if ($result->num_rows > 0) {
 ?>
 
 <?php echo $result->num_rows; ?> elementi<br>
-<form action="" method="POST"  >
-<h3><b>Inserimento Utenti:</b></h3>
-    Nome: <input type='text' name='nome' id='nome' ><br>
-    Cognome: <input type='text' name='cognome' id='cognome' ><br>
-    Codice Fiscale: <input type='text' name='cf' id='cf' ><br>
-   <!-- Abilitato: <input type='number' name='abilitato' id='abilitato' min=0 max=1 ><br>-->
-    Email: <input type='email' name='ema' id='ema' required><br>
-    Password: <input type='password' name='pass' id='pass'><br>
-    <br><input type='submit' id="azione2" name="azione2" value='insert'><br><br>
-</form>
+<input type = "button"
+id = "btn_cmd"
+name = "btn_cmd"
+value = "inserisci"
+onclick = "inserisci();">
 <form 	action	= ""
 		method	= "POST" 
         id		= "insupddel" 
         name	= "insupddel" 
         style	= "display:none;">
-        <h3><b>Aggiornamento campi</h3>
 	<input type="hidden" name="azione" id="azione" value="insert">
 	<input type="hidden" name="pk" id="pk" value="">
-    Campi: <select id='campi' name='campi'>
-            <option value='' label='Seleziona un campo' selected disabled>
-            <option value='nome' label='nome'>
-            <option value='cognome' label='cognome'>
-            <option value='is_enabled' label='is_enabled'>
-            <option value='email' label='email'>
-            <option value='password' label='password'>
-            <option value='cf' label='cf'>
-            <option value='registrazione' label='registrazione'>
-    </select>
-    Valore: <input type='text' 		name='nome' id='nome' ><br>
+     Nome: <input type='text' name='nome' id='nome' ><br>
+    Cognome: <input type='text' name='cognome' id='cognome' ><br>
+    Codice Fiscale: <input type='text' name='cf' id='cf' ><br>
+    Abilitato: <input type='checkbox' name='abilitato' id='abilitato' ><br>
+    Email: <input type='email' name='ema' id='ema' required><br>
+    Password: <input type='password' name='pass' id='pass'><br>
 	<input type="submit" 	value="inserisci" >
 </form>
 </body>
@@ -275,4 +226,4 @@ if ($result->num_rows > 0) {
 <?php
 }
 $conn->close();
-?>
+?>
